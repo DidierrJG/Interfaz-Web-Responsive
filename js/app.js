@@ -18,6 +18,8 @@ function mostrarUsuarios(usuarios) {
     })
 }
 
+let usuariosGlobales = [];
+
 async function cargarUsuarios() {
     const mensaje = document.querySelector("#mensaje");
 
@@ -30,8 +32,8 @@ async function cargarUsuarios() {
             throw new Error(`Error HTTP: ${response.status}`);
         }
 
-        const usuarios = await response.json();
-        mostrarUsuarios(usuarios);
+        usuariosGlobales = await response.json();
+        mostrarUsuarios(usuariosGlobales);
         mensaje.textContent = "";
     } catch(error) {
         mensaje.textContent = "No fue posible cargar la informacion";
@@ -40,3 +42,12 @@ async function cargarUsuarios() {
 }
 
 cargarUsuarios();
+
+const buscar = document.querySelector("#buscar");
+
+buscar.addEventListener("input", () => {
+    const texto = buscar.value.toLowerCase();
+    const filtrados = usuariosGlobales.filter(usuario => usuario.name.toLowerCase().includes(texto));
+    console.log(filtrados);
+    mostrarUsuarios(filtrados);
+})
