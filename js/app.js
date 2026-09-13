@@ -12,6 +12,7 @@ function mostrarUsuarios(usuarios) {
             <p>${usuario.email}</p>
             <p>${usuario.address.city}</p>
             <p>${usuario.company.name}</p>
+            <button class="detalles">+ Ver mas detalles</button>
         `;
 
         contenedor.appendChild(tarjeta);
@@ -19,10 +20,11 @@ function mostrarUsuarios(usuarios) {
 }
 
 let usuariosGlobales = [];
+let filtrados = [];
+
+const mensaje = document.querySelector("#mensaje");
 
 async function cargarUsuarios() {
-    const mensaje = document.querySelector("#mensaje");
-
     try {
         mensaje.textContent = "Cargando usuarios...";
 
@@ -33,6 +35,7 @@ async function cargarUsuarios() {
         }
 
         usuariosGlobales = await response.json();
+        filtrados = usuariosGlobales;
         mostrarUsuarios(usuariosGlobales);
         mensaje.textContent = "";
     } catch(error) {
@@ -44,10 +47,58 @@ async function cargarUsuarios() {
 cargarUsuarios();
 
 const buscar = document.querySelector("#buscar");
+let ordenarAlfabeticamente = false;
 
 buscar.addEventListener("input", () => {
     const texto = buscar.value.toLowerCase();
-    const filtrados = usuariosGlobales.filter(usuario => usuario.name.toLowerCase().includes(texto));
-    console.log(filtrados);
+    filtrados = usuariosGlobales.filter(usuario => usuario.name.toLowerCase().includes(texto));
+
+    mensaje.textContent = filtrados.length === 0 ? "No se encontraron coincidencias" : "";
+
+    if(ordenarAlfabeticamente) {
+        filtrados = filtrados.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
     mostrarUsuarios(filtrados);
 })
+
+const ordenar = document.querySelector("#ordenar");
+
+ordenar.addEventListener("click", () => {
+    ordenarAlfabeticamente = !ordenarAlfabeticamente;
+    ordenar.textContent = ordenarAlfabeticamente ? "A - Z" : "Z - A";
+
+    const ordenados = filtrados.sort((a, b) => ordenarAlfabeticamente ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
+
+    mostrarUsuarios(ordenados);
+})
+
+const detalles = document.querySelector(".detalles");
+
+contenedor.addEventListener("click", (e) => {
+    if(e.target.classList.contains("detalles")) {
+        const tarjeta = e.target.parentElement;
+        const detalles = tarjeta.querySelector(".detalles");
+
+        if(detalles.textContent === "+ Ver mas detalles") {
+            detalles.textContent = "- Mostrar menos";
+            
+            const nombreBuscado = tarjeta.querySelector("h3");
+            const usuario = usuariosGlobales.find(usuario => usuario.name === nombreBuscado.textContent);
+            const masInformacion = document.createElement("div");
+            masInformacion.classList.add("mas-informacion");
+
+            masInformacion.innerHTML = `
+                <p>${usuario.email}</p>
+                <p>${usuario.phone}</p>
+                <p>${usuario.website}</p>
+            `;
+
+            tarjeta.appendChild(masInformacion);
+        } else {
+            detalles.textContent = "+ Ver mas detalles";
+            const masInformacion = tarjeta.querySelector(".mas-informacion");
+            masInformacion.remove();
+        }
+    } 
+});

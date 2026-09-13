@@ -66,3 +66,7 @@ main {
         padding: 16px;
     }
 }
+
+button:hover {
+    background: #B8B8B8;
+}
